@@ -7,6 +7,8 @@
 //
 // version 2:
 // adding saving and loading xml feature
+// version 2.1:
+// adding ascii char pixelbrush
 // rfboyce@gmail.com 20130923
 
 // todo list:
@@ -42,14 +44,17 @@ boolean trails = true;
 
 int shift = 0;
 
+PFont font;
+
 void setup() {
-  size(810, 610, P3D);
+  size(1280, 800, P3D);
   points = new ArrayList();
   smooth();
   noCursor();
   colorMode(HSB, 100);
   background(0);
   placePoint();
+  font = createFont("Georgia", 24);
 }
 
 boolean skecthFullScreen() {
@@ -82,6 +87,9 @@ void draw() {
         break;
       case 3:
         dotted(i);
+        break;
+      case 4:
+        ascii(i);
         break;
       }
     }
@@ -128,6 +136,17 @@ void dotted(int i) {
   }
 }
 
+void ascii(int i){
+  textFont(font);
+  textAlign(CENTER, CENTER);
+  fill(25, 255, 180);
+  char letter = char(123);
+  pushMatrix();
+  translate(x1+d*(x2-x1), y1+d*(y2-y1));
+  rotate(PI/2);
+  text(letter, 0, 0);
+  popMatrix();
+}
 
 void drawLines() {
   background(0);
