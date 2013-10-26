@@ -27,6 +27,9 @@ float d = 0.1;
 float speed = 0.01;
 int col;
 int mode = 1;
+
+int pntSz = 8;
+int lnSz = 7;
 // 0 blackout, 1 edit, 2 rainbow kittens.
 
 int px = 0;
@@ -47,7 +50,7 @@ int shift = 0;
 PFont font;
 
 void setup() {
-  size(2560, 830, P3D);
+  size(640, 480, P3D);
   points = new ArrayList();
   smooth();
   noCursor();
@@ -65,7 +68,7 @@ boolean skecthFullScreen() {
 void draw() {
   step();
   bg();
-  if (points.size()<2) maper();
+  if (points.size()<2 || mode == 1) maper();
   else {
   for (int i = points.size()-1; i > 1; i--) {
     int j = i - 1;
@@ -73,14 +76,10 @@ void draw() {
       x1 = int(points.get(j).x);
       y1 = int(points.get(j).y);
       x2 = int(points.get(i).x);
-      y2 = int(points.get(i).y);
-     
+      y2 = int(points.get(i).y);     
       switch(mode) {
       case 0:
         background(0);
-        break;
-      case 1:
-        maper();
         break;
       case 2:
         polka(i);
@@ -90,6 +89,9 @@ void draw() {
         break;
       case 4:
         ascii(i);
+        break;
+      case 5:
+        linnen(i);
         break;
       }
     }
@@ -118,8 +120,8 @@ void maper() {
 
 void polka(int i) {
   fill(points.get(i).z, 255, 255);
-  strokeWeight(1);
-  ellipse(x1+d*(x2-x1), y1+d*(y2-y1), 5, 5);
+  strokeWeight(pntSz);
+  point(x1+d*(x2-x1), y1+d*(y2-y1));
 }
 
 
@@ -129,7 +131,7 @@ void dotted(int i) {
   int l = int(sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
   n=l/30;
   stroke(points.get(i).z, 255, 255);
-  strokeWeight(6);
+  strokeWeight(pntSz);
   for (float k = 0; k<n;k++) {  
     float e = (d+k)/n;    
     point(x1+e*(x2-x1), y1+e*(y2-y1));
@@ -150,6 +152,14 @@ void ascii(int i){
   rotate(PI/2);
   text(letter, 0, 0);
   popMatrix();
+}
+
+
+void linnen(int i){
+stroke(random(100),100,100);
+  strokeWeight(lnSz);
+  line(x1, y1, x2, y2);
+  if(points.size()<100) delay(10);
 }
 
 void drawLines() {
@@ -274,6 +284,9 @@ void mousePressed() {
     else if (mouseButton == RIGHT) {
       removePoint();
     }
+    else{
+      blackPoint();
+    }
   }
 }
 
@@ -320,6 +333,14 @@ void keyPressed() {
     mouse=!mouse;
     println("Mouse = "+mouse);
   }
+  else if (key == 'o') {
+    pntSz-=1;
+    println("pntSz = "+pntSz);
+  }
+  else if (key == 'p') {
+    pntSz+=1;
+    println("pntSz = "+pntSz);
+  }
   else if (key == 'r') {
     speed = speed * -1;
   }
@@ -346,14 +367,16 @@ void keyPressed() {
     println("Mode #"+mode);
   }
   else if (key == 'h') {
-    println("b break line");
+    println("SPACE OR left button -> place point");
+    println("z OR right button -> undo");
+    println("b OR middle button break line");
     println("h help");
     println("l load points");
     println("m mouse");
     println("r reverse direction");
     println("s save points");
     println("t trails");
-    println("z undo");
+    println("p/o point size"); 
     println("0-9 modes");
     println("- speed--");
     println("= speed++");
