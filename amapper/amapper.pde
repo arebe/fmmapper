@@ -47,7 +47,7 @@ int shift = 0;
 PFont font;
 
 void setup() {
-  size(1280, 800, P3D);
+  size(2560, 830, P3D);
   points = new ArrayList();
   smooth();
   noCursor();
@@ -139,8 +139,12 @@ void dotted(int i) {
 void ascii(int i){
   textFont(font);
   textAlign(CENTER, CENTER);
-  fill(25, 255, 180);
-  char letter = char(123);
+  //fill(25, 255, 180);
+  fill(20, 255, 80);
+  //char letter = char(123);
+  char letter = char(79);
+  char[] letters = {'o', 'O'};
+  letter = letters[int(random(0, letters.length))];
   pushMatrix();
   translate(x1+d*(x2-x1), y1+d*(y2-y1));
   rotate(PI/2);
