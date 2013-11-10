@@ -24,12 +24,22 @@
 ArrayList<PVector> points;
 XML xml;
 float d = 0.1;
+float colOffset = 0.1;
 float speed = 0.01;
-int col;
-int mode = 1;
+int trailmix = 10;
 
-int pntSz = 8;
-int lnSz = 7;
+int col;//?
+
+int mode = 1;
+int thingMode = 1;
+int colMode = 1;
+
+
+
+int sizer = 8;
+
+int current = 0;
+
 // 0 blackout, 1 edit, 2 rainbow kittens.
 
 int px = 0;
@@ -56,13 +66,10 @@ void setup() {
   noCursor();
   colorMode(HSB, 100);
   background(0);
-  placePoint();
   font = createFont("Georgia", 24);
+  placePoint();
 }
 
-boolean skecthFullScreen() {
-  return false;
-}
 
 
 void draw() {
@@ -70,37 +77,138 @@ void draw() {
   bg();
   if (points.size()<2 || mode == 1) maper();
   else {
-  for (int i = points.size()-1; i > 1; i--) {
-    int j = i - 1;
-    if (points.get(i).z!=255) {
-      x1 = int(points.get(j).x);
-      y1 = int(points.get(j).y);
-      x2 = int(points.get(i).x);
-      y2 = int(points.get(i).y);     
-      switch(mode) {
-      case 0:
-        background(0);
-        break;
-      case 2:
-        polka(i);
-        break;
-      case 3:
-        dotted(i);
-        break;
-      case 4:
-        ascii(i);
-        break;
-      case 5:
-        linnen(i);
-        break;
+    for (int i = points.size()-1; i > 1; i--) {
+      int j = i - 1;
+      if (points.get(i).z!=255) {
+        x1 = int(points.get(j).x);
+        y1 = int(points.get(j).y);
+        x2 = int(points.get(i).x);
+        y2 = int(points.get(i).y);  
+        current = i;
+        movement();
       }
     }
   }
 }
+
+
+///////////////////   movement    \\\\\\\\\\\\\\\\\\\\\\
+
+void movement() {
+  switch(mode) {
+  case 0:
+    background(0);
+    break;
+  case 2:
+    polka();
+    break;
+  case 3:
+    dotted();
+    break;
+  case 4:
+    linnen();
+    break;
+  }
+}
+
+void polka() {
+  thingner(int(x1+d*(x2-x1)), int(y1+d*(y2-y1)));
+}
+
+void dotted() {
+  int n = 24;
+  //adjust number of dots:
+  int l = int(sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
+  n=l/(sizer*2);
+  for (float k = 0; k<n;k++) {  
+    float e = (d+k)/n;    
+    thingner(int(x1+e*(x2-x1)), int(y1+e*(y2-y1)));
+  }
 }
 
 
 
+/////// STUFF THAT MAKES PIXELS CHANGE COLOR  \\\\\\\\\\\\
+
+///////////////////  things
+void thingner(int xx, int yy) {
+  switch(thingMode){
+  case 0:
+    pnt(xx, yy);
+    break;
+  case 1:
+    arrow(xx, yy);
+    break;
+  case 2:
+    liner(xx, yy);
+    break;
+  case 3:
+    ascii(xx, yy);
+    break;
+  }
+}
+
+
+color colorizer() {
+  colOffset+=0.006;
+  return color(((current*5)+colOffset)%100, 255, 255); 
+}
+
+
+void pnt(int xx,int yy){
+  strokeWeight(sizer);
+  stroke(colorizer());
+  point(xx, yy);
+}
+
+void liner(int xx, int yy) {
+  stroke(colorizer());
+  strokeWeight(3);
+  pushMatrix();
+  translate(xx, yy);
+  rotate(atan2(y1-y2, x1-x2));
+  line(0,sizer,0,-sizer);
+  popMatrix();
+}
+
+void arrow(int xx, int yy) {
+  stroke(colorizer());
+  strokeWeight(3);
+  pushMatrix();
+  translate(xx, yy);
+  rotate(atan2(y1-y2, x1-x2));
+  line(0,0,sizer,sizer);
+  line(0,0,sizer,-sizer);
+  popMatrix();
+}
+
+void ascii(int xx, int yy) {
+  textFont(font);
+  textAlign(CENTER, CENTER);
+  //char letter = char(123);
+  char letter = char(79);
+  char[] letters = {
+    'x', 'X'
+  };
+  letter = letters[int(random(0, letters.length))];
+  fill(colorizer());
+  pushMatrix();
+  translate(xx, yy);
+  rotate(atan2(y1-y2, x1-x2));
+  text(letter, 0, 0);
+  popMatrix();
+}
+
+
+void linnen() {
+  stroke(colorizer());
+  strokeWeight(sizer);
+  line(x1, y1, x2, y2);
+  if (points.size()<100) delay(10);
+}
+
+
+/////////  mapper things
 void maper() {
   trails = false;
   placePoint();
@@ -113,75 +221,6 @@ void maper() {
   aimer(px, py);
 }
 
-
-
-
-/////// STUFF THAT MAKES PIXELS CHANGE COLOR  \\\\\\\\\\\\
-
-//motion modes
-
-void polka(int i) {
-  stroke(points.get(i).z, 255, 255);
-  strokeWeight(pntSz);
-  point(x1+d*(x2-x1), y1+d*(y2-y1));
-}
-
-void dotted(int i) {
-  int n = 24;
-  //adjust number of dots:
-  int l = int(sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
-  n=l/30;
-  stroke(points.get(i).z, 255, 255);
-  strokeWeight(pntSz);
-  for (float k = 0; k<n;k++) {  
-    float e = (d+k)/n;    
-    point(x1+e*(x2-x1), y1+e*(y2-y1));
-  }
-}
-
-//things
-void thingner(int xx, int yy){
-  switch(thing){
-    case 0:
-      point(xx,yy);
-      break;
-    case 1:
-      arrow(xx,yy);
-      break;
-    case 2:
-      liner(xx,yy);
-      break;
-  }
-}
-
-
-
-void arrow(int i){
-  
-
-void ascii(int i){
-  textFont(font);
-  textAlign(CENTER, CENTER);
-  //fill(25, 255, 180);
-  fill(20, 255, 80);
-  //char letter = char(123);
-  char letter = char(79);
-  char[] letters = {'o', 'O'};
-  letter = letters[int(random(0, letters.length))];
-  pushMatrix();
-  translate(x1+d*(x2-x1), y1+d*(y2-y1));
-  rotate(PI/2);
-  text(letter, 0, 0);
-  popMatrix();
-}
-
-
-void linnen(int i){
-stroke(random(100),100,100);
-  strokeWeight(lnSz);
-  line(x1, y1, x2, y2);
-  if(points.size()<100) delay(10);
-}
 
 void drawLines() {
   background(0);
@@ -224,56 +263,18 @@ void aimer(int xx, int yy) {
   }
 }
 
-/* save points as XML */
-void savePoints(){
-  if (points.size()>2){
-    // create empty XML
-    String data = "<points></points>";
-   // xml = parseXML(data);
-    // populate XML with ArrayList contents
-    for (int i = 1; i < points.size(); i++){
-     // save each point attribute to an xml item 
-     XML newChild = xml.addChild("point");
-     newChild.setFloat("x", points.get(i).x);
-     newChild.setFloat("y", points.get(i).y);
-     newChild.setFloat("z", points.get(i).z);
-     newChild.setContent("point" + i);
-     println(newChild);
-    }
-    //saveXML(xml, "points.xml");
-    println("Points saved as points.xml");  
-  }
-  else println("Not enough points to save.");
-}
-
-/* load new points from XML */
-void loadPoints(){
-  // clear points ArrayList
-  points.clear();
-  xml = loadXML("points.xml");
-  XML[] children = xml.getChildren("point");
-  // check to see if XML is parsing properly
-  for (int i = 0; i < children.length; i++){
-    int ptX = int(children[i].getFloat("x"));
-    int ptY = int(children[i].getFloat("y"));
-    int ptZ = int(children[i].getFloat("z"));
-    // set ArrayList items to loaded values
-    points.add(new PVector(ptX, ptY, ptZ));
-    println("point " + i + ": " + ptX + ", " + ptY + ", " + ptZ);
-  }
-  println("Loaded points.xml");  
-}
-
 //////SMALL FUNCTIONS\\\\\\\
 void step() {
   d = d+speed;
+  colOffset+=0.02;
   if (d>1) d=0;
   if (d<0) d=1;
 }
 
 void bg() {
   if (trails) {
-    fill(0, 0, 0, 10);
+    fill(0, 0, 0, trailmix);
+    stroke(0, 0, 0, trailmix);
     rect(0, 0, width, height);
   }
   else {
@@ -295,6 +296,49 @@ void removePoint() {
 }
 
 
+
+/* save points as XML */
+void savePoints() {
+  if (points.size()>2) {
+    // create empty XML
+    String data = "<points></points>";
+    // xml = parseXML(data);
+    // populate XML with ArrayList contents
+    for (int i = 1; i < points.size(); i++) {
+      // save each point attribute to an xml item 
+      XML newChild = xml.addChild("point");
+      newChild.setFloat("x", points.get(i).x);
+      newChild.setFloat("y", points.get(i).y);
+      newChild.setFloat("z", points.get(i).z);
+      newChild.setContent("point" + i);
+      println(newChild);
+    }
+    //saveXML(xml, "points.xml");
+    println("Points saved as points.xml");
+  }
+  else println("Not enough points to save.");
+}
+
+/* load new points from XML */
+void loadPoints() {
+  // clear points ArrayList
+  points.clear();
+  xml = loadXML("points.xml");
+  XML[] children = xml.getChildren("point");
+  // check to see if XML is parsing properly
+  for (int i = 0; i < children.length; i++) {
+    int ptX = int(children[i].getFloat("x"));
+    int ptY = int(children[i].getFloat("y"));
+    int ptZ = int(children[i].getFloat("z"));
+    // set ArrayList items to loaded values
+    points.add(new PVector(ptX, ptY, ptZ));
+    println("point " + i + ": " + ptX + ", " + ptY + ", " + ptZ);
+  }
+  println("Loaded points.xml");
+}
+
+
+
 /////////////////////  INPUT  \\\\\\\\\\\\\\\\\\\\\\\\\
 
 void mousePressed() {
@@ -305,7 +349,7 @@ void mousePressed() {
     else if (mouseButton == RIGHT) {
       removePoint();
     }
-    else{
+    else {
       blackPoint();
     }
   }
@@ -347,7 +391,7 @@ void keyPressed() {
   else if (key == 'b') {
     blackPoint();
   }
-  else if (key =='l'){
+  else if (key =='l') {
     loadPoints();
   }
   else if (key == 'm') {
@@ -355,17 +399,17 @@ void keyPressed() {
     println("Mouse = "+mouse);
   }
   else if (key == 'o') {
-    pntSz-=1;
-    println("pntSz = "+pntSz);
+    sizer-=1;
+    println("sizer = "+sizer);
   }
   else if (key == 'p') {
-    pntSz+=1;
-    println("pntSz = "+pntSz);
+    sizer+=1;
+    println("sizer = "+sizer);
   }
   else if (key == 'r') {
     speed = speed * -1;
   }
-  else if (key == 's'){
+  else if (key == 's') {
     savePoints();
   }
   else if (key == 't') {
@@ -383,8 +427,20 @@ void keyPressed() {
     speed+=0.01;
     println("Speed : "+speed);
   }
+  else if (key == '[') {
+    trailmix-=1;
+    println("Trailmix : "+trailmix);
+  }
+  else if (key == ']') {
+    trailmix+=1;
+    println("Trailmix : "+trailmix);
+  }
+  
+  
   else if (float(key)>=48&&float(key)<=57) {
-    mode = int(key)-48;
+    int mde = int(key)-48;
+    if(mde<6)mode = mde;
+    else thingMode = mde-6; 
     println("Mode #"+mode);
   }
   else if (key == 'h') {
@@ -401,5 +457,8 @@ void keyPressed() {
     println("0-9 modes");
     println("- speed--");
     println("= speed++");
+    println("[ trailmix--");
+    println("[ trailmix++");
   }
 }
+
