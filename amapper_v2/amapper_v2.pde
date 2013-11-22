@@ -151,7 +151,7 @@ void thingner(int xx, int yy) {
 
 color colorizer() {
   colOffset+=0.006;
-  return color(((current*5)+colOffset)%100, 255, 255); 
+  return color(0,0,100);//((current*5)+colOffset)%100, 255, 255); 
 }
 
 
@@ -246,7 +246,7 @@ void drawLines() {
 
 void aimer(int xx, int yy) {
   strokeWeight(3);
-  stroke(100, 100, 100);
+  stroke(0, 0, 100);
   int out = 20;
   int in = 5;
   if (mouse) {
@@ -420,11 +420,11 @@ void keyPressed() {
     removePoint();
   }
   else if (key == '-') {
-    speed-=0.01;
+    speed-=0.003;
     println("Speed : "+speed);
   }
   else if (key == '=') {
-    speed+=0.01;
+    speed+=0.003;
     println("Speed : "+speed);
   }
   else if (key == '[') {
